@@ -1,0 +1,29 @@
+<!-- client.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>WebSocket Client</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+      const socket = io('http://localhost:3000/notification');
+
+      socket.on('connect', () => {
+        console.log('Connected to server');
+      });
+
+      socket.on('message', (message) => {
+        console.log('Received:', message);
+      });
+
+      function sendMessage() {
+        const message = document.getElementById('messageInput').value;
+        socket.emit('message', message);
+      }
+    </script>
+  </head>
+  <body>
+    <input type="text" id="messageInput" placeholder="Type a message" />
+    <button onclick="sendMessage()">Send</button>
+  </body>
+</html>
