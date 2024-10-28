@@ -3,48 +3,74 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WebSocket Client</title>
+    <title>WebSocket Notification Client</title>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
   </head>
   <body>
-    <h1>Chat en tiempo real</h1>
+    <h1>Notificaciones y Alertas en tiempo real</h1>
 
-    <!-- Campo para mostrar los mensajes -->
-    <div id="messages"></div>
+    <!-- Contenedor para mostrar las notificaciones y alertas -->
+    <div id="notifications"></div>
 
-    <!-- Campo de entrada para el mensaje -->
-    <input type="text" id="messageInput" placeholder="Escribe un mensaje" />
+    <!-- Campo de entrada para las notificaciones -->
+    <input
+      type="text"
+      id="notificationInput"
+      placeholder="Escribe una notificación"
+    />
+    <button onclick="sendNotification()">Enviar Notificación</button>
 
-    <!-- Botón para enviar el mensaje -->
-    <button onclick="sendMessage()">Enviar</button>
+    <!-- Campo de entrada para las alertas -->
+    <input type="text" id="alertInput" placeholder="Escribe una alerta" />
+    <button onclick="sendAlert()">Enviar Alerta</button>
 
     <script>
+      // Conectar con el servidor WebSocket en el namespace /notification
       const socket = io('http://localhost:3000/notification');
 
+      // Confirmación de conexión en la consola
       socket.on('connect', () => {
-        console.log('Conectado al servidor WebSocket');
+        console.log('Conectado al servidor de notificaciones WebSocket');
       });
 
-      // Escuchar el evento 'notification' para mostrar mensajes en la página
+      // Escuchar el evento 'notification' para mostrar notificaciones en la página
       socket.on('notification', (message) => {
-        displayMessage(message);
+        displayMessage('Notificación', message);
       });
 
-      function sendMessage() {
-        const message = document.getElementById('messageInput').value;
+      // Escuchar el evento 'alert' para mostrar alertas en la página
+      socket.on('alert', (message) => {
+        displayMessage('Alerta', message);
+      });
+
+      // Función para enviar una notificación al servidor
+      function sendNotification() {
+        const message = document.getElementById('notificationInput').value;
         if (message.trim()) {
-          socket.emit('notification', message); // Envía el mensaje al servidor
-          document.getElementById('messageInput').value = ''; // Limpia el campo de entrada
+          socket.emit('notification', message); // Envía la notificación al servidor
+          document.getElementById('notificationInput').value = ''; // Limpia el campo de entrada
         } else {
-          console.log('El mensaje está vacío');
+          console.log('La notificación está vacía');
         }
       }
 
-      function displayMessage(message) {
-        const messagesDiv = document.getElementById('messages');
+      // Función para enviar una alerta al servidor
+      function sendAlert() {
+        const message = document.getElementById('alertInput').value;
+        if (message.trim()) {
+          socket.emit('alert', message); // Envía la alerta al servidor
+          document.getElementById('alertInput').value = ''; // Limpia el campo de entrada
+        } else {
+          console.log('La alerta está vacía');
+        }
+      }
+
+      // Función para mostrar notificaciones o alertas en la página
+      function displayMessage(type, message) {
+        const notificationsDiv = document.getElementById('notifications');
         const messageElement = document.createElement('p');
-        messageElement.textContent = message;
-        messagesDiv.appendChild(messageElement);
+        messageElement.textContent = `${type}: ${message}`;
+        notificationsDiv.appendChild(messageElement);
       }
     </script>
   </body>

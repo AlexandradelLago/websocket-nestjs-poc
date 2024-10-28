@@ -1,9 +1,10 @@
-// src/chat.gateway.ts
+// src/notification.gateway.ts
 import {
   WebSocketGateway,
   SubscribeMessage,
   WebSocketServer,
   MessageBody,
+  ConnectedSocket,
   OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -17,25 +18,40 @@ export class NotificationGateway
   @WebSocketServer() server: Server;
 
   afterInit(server: Server) {
-    console.log('🚀 WebSocket Gateway initialized');
+    console.log('🚀 Notification WebSocket Gateway initialized');
   }
 
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
-
-    // Envía un mensaje de bienvenida al cliente recién conectado
-    client.emit('notification', 'Bienvenido al chat en tiempo real');
+    client.emit(
+      'notification',
+      'Bienvenido a las notificaciones en tiempo real',
+    );
   }
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
   }
 
+  // Evento para manejar notificaciones
   @SubscribeMessage('notification')
-  handleMessage(@MessageBody() message: string): void {
-    console.log(`Mensaje recibido del cliente: ${message}`);
+  handleNotification(
+    @MessageBody() message: string,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    console.log(`Notification received: ${message}`);
+    // Envía el mensaje a todos los clientes excepto al remitente
+    client.broadcast.emit('notification', `Notificación: ${message}`);
+  }
 
-    // Retransmite el mensaje a todos los clientes conectados, incluyendo al remitente
-    this.server.emit('notification', `Mensaje del servidor: ${message}`);
+  // Evento para manejar alertas
+  @SubscribeMessage('alert')
+  handleAlert(
+    @MessageBody() message: string,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    console.log(`Alert received: ${message}`);
+    // Envía el mensaje a todos los clientes excepto al remitente
+    client.broadcast.emit('alert', `Alerta: ${message}`);
   }
 }
